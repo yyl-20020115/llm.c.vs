@@ -610,7 +610,6 @@ typedef struct {
     float* qkvr; // (L, B, T, 3*C)
     float* v_accum; // (L, B, T, C)
 } ActivationTensors;
-
 float* malloc_and_point_activations(ActivationTensors* acts, size_t* act_sizes) {
     size_t num_activations = 0;
     for (size_t i = 0; i < NUM_ACTIVATION_TENSORS; i++) {

@@ -56,9 +56,6 @@ int clock_gettime(int dummy, struct timespec* ct)
 #include <omp.h>
 #endif
 
-// ----------------------------------------------------------------------------
-// all the individual layers' forward and backward passes
-
 void encoder_forward(float* out,
                    int* inp, float* wte, float* wpe,
                    int B, int T, int C) {
@@ -496,6 +493,14 @@ typedef struct {
     float* lnfb; // (C)
 } ParameterTensors;
 
+size_t get_params_all_size(size_t* param_sizes) {
+    size_t num_parameters = 0;
+    for (size_t i = 0; i < NUM_PARAMETER_TENSORS; i++) {
+        num_parameters += param_sizes[i];
+    }
+    return num_parameters;
+}
+
 // allocate memory for the parameters and point the individual tensors to the right places
 float* malloc_and_point_parameters(ParameterTensors* params, size_t* param_sizes) {
     size_t num_parameters = 0;
@@ -506,14 +511,30 @@ float* malloc_and_point_parameters(ParameterTensors* params, size_t* param_sizes
     float* params_memory = (float*)malloc(num_parameters * sizeof(float));
     // assign all the tensors
     float** ptrs[] = {
-        &params->wte, &params->wpe, &params->ln1w, &params->ln1b, &params->qkvw, &params->qkvb,
-        &params->attprojw, &params->attprojb, &params->ln2w, &params->ln2b, &params->fcw, &params->fcb,
-        &params->fcprojw, &params->fcprojb, &params->lnfw, &params->lnfb
+        &params->wte,
+        &params->wpe, 
+        &params->ln1w,
+        &params->ln1b, 
+        &params->qkvw,
+        &params->qkvb,
+        &params->attprojw,
+        &params->attprojb,
+        &params->ln2w,
+        &params->ln2b,
+        &params->fcw,
+        &params->fcb,
+        &params->fcprojw, 
+        &params->fcprojb,
+        &params->lnfw,
+        &params->lnfb
     };
+    //int p = 0;
     float* params_memory_iterator = params_memory;
     for (size_t i = 0; i < NUM_PARAMETER_TENSORS; i++) {
         *(ptrs[i]) = params_memory_iterator;
         params_memory_iterator += param_sizes[i];
+        //p += param_sizes[i];
+        //printf("p=%d\n", p);
     }
     return params_memory;
 }
@@ -544,6 +565,13 @@ typedef struct {
     float* probs; // (B, T, V)
     float* losses; // (B, T)
 } ActivationTensors;
+size_t get_acts_all_size(size_t* act_sizes) {
+    size_t num_activations = 0;
+    for (size_t i = 0; i < NUM_ACTIVATION_TENSORS; i++) {
+        num_activations += act_sizes[i];
+    }
+    return num_activations;
+}
 
 float* malloc_and_point_activations(ActivationTensors* acts, size_t* act_sizes) {
     size_t num_activations = 0;
@@ -552,15 +580,38 @@ float* malloc_and_point_activations(ActivationTensors* acts, size_t* act_sizes) 
     }
     float* acts_memory = (float*)malloc(num_activations * sizeof(float));
     float** ptrs[] = {
-        &acts->encoded, &acts->ln1, &acts->ln1_mean, &acts->ln1_rstd, &acts->qkv, &acts->atty,
-        &acts->preatt, &acts->att, &acts->attproj, &acts->residual2, &acts->ln2, &acts->ln2_mean,
-        &acts->ln2_rstd, &acts->fch, &acts->fch_gelu, &acts->fcproj, &acts->residual3, &acts->lnf,
-        &acts->lnf_mean, &acts->lnf_rstd, &acts->logits, &acts->probs, &acts->losses
+        &acts->encoded,
+        &acts->ln1,
+        &acts->ln1_mean,
+        &acts->ln1_rstd,
+        &acts->qkv,
+        &acts->atty,
+        &acts->preatt,
+        &acts->att,
+        &acts->attproj, 
+        &acts->residual2,
+        &acts->ln2,
+        &acts->ln2_mean,
+        &acts->ln2_rstd,
+        &acts->fch,
+        &acts->fch_gelu,
+        &acts->fcproj,
+        &acts->residual3,
+        &acts->lnf,
+        &acts->lnf_mean, 
+        &acts->lnf_rstd,
+        &acts->logits,
+        &acts->probs,
+        &acts->losses
     };
+    //int p = 0;
     float* acts_memory_iterator = acts_memory;
     for (size_t i = 0; i < NUM_ACTIVATION_TENSORS; i++) {
         *(ptrs[i]) = acts_memory_iterator;
         acts_memory_iterator += act_sizes[i];
+        //p += act_sizes[i];
+        //printf("p=%d\n", p);
+
     }
     return acts_memory;
 }
@@ -735,6 +786,7 @@ void gpt2_forward(GPT2 *model, int* inputs, int* targets, int B, int T) {
     }
 
     // cache the inputs/targets
+    //memcpy(dest,src,length)
     memcpy(model->inputs, inputs, B * T * sizeof(int));
     if (targets != NULL) {
         memcpy(model->targets, targets, B * T * sizeof(int));
@@ -744,7 +796,9 @@ void gpt2_forward(GPT2 *model, int* inputs, int* targets, int B, int T) {
     ParameterTensors params = model->params; // for brevity
     ActivationTensors acts = model->acts;
     float* residual;
+
     encoder_forward(acts.encoded, inputs, params.wte, params.wpe, B, T, C); // encoding goes into residual[0]
+
     for (int l = 0; l < L; l++) {
 
         residual = l == 0 ? acts.encoded : acts.residual3 + (l-1) * B * T * C;
@@ -801,7 +855,6 @@ void gpt2_forward(GPT2 *model, int* inputs, int* targets, int B, int T) {
     // also forward the cross-entropy loss function if we have the targets
     if (targets != NULL) {
         crossentropy_forward(model->acts.losses, model->acts.probs, targets, B, T, V);
-        // for convenience also evaluate the mean loss
         float mean_loss = 0.0f;
         for (int i=0; i<B*T; i++) { mean_loss += model->acts.losses[i]; }
         mean_loss /= B*T;
@@ -1071,6 +1124,7 @@ int sample_mult(float* probabilities, int n, float coin) {
 // ----------------------------------------------------------------------------
 // main training loop
 int main() {
+    log_file = fopen("log.txt", "w");
 
     // build the GPT-2 model from a checkpoint
     GPT2 model;
@@ -1109,6 +1163,7 @@ int main() {
                 dataloader_next_batch(&val_loader);
                 gpt2_forward(&model, val_loader.inputs, val_loader.targets, B, T);
                 val_loss += model.mean_loss;
+                printf("step %d mean loss %f\n", i, model.mean_loss);
             }
             val_loss /= val_num_batches;
             printf("val loss %f\n", val_loss);
