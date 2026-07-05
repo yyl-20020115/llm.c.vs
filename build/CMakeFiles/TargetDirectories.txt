@@ -1,0 +1,4 @@
+D:/Working/llm.c.vs/build/CMakeFiles/test_gpt2.dir
+D:/Working/llm.c.vs/build/CMakeFiles/train_gpt2.dir
+D:/Working/llm.c.vs/build/CMakeFiles/ALL_BUILD.dir
+D:/Working/llm.c.vs/build/CMakeFiles/ZERO_CHECK.dir

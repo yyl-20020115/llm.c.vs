@@ -1,0 +1,10 @@
+^D:\WORKING\LLM.C.VS\BUILD\CMAKEFILES\F89EAB63C8E4016769A90135FE61792C\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/Working/llm.c.vs -BD:/Working/llm.c.vs/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/Working/llm.c.vs/build/llm_c_gpt2.slnx
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
