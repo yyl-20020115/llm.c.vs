@@ -80,7 +80,8 @@ typedef struct {
 
 // one global variable to hold the multi-GPU configuration for this process
 // inline, so we can include this header multiple times without getting multiple definitions
-inline MultiGpuConfig multi_gpu_config;
+//inline 
+MultiGpuConfig multi_gpu_config;
 
 #ifdef MULTI_GPU
 

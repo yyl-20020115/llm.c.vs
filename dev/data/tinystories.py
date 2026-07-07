@@ -102,17 +102,25 @@ def tokenize(model_desc):
     val_shards = [shard_filenames[0]]
     train_shards = shard_filenames[1:]
     for split_name, split_shards in [("val", val_shards), ("train", train_shards)]:
-
+        count = 0
         print(f"Tokenizing {split_name} split...")
         all_tokens = []
+        split_filename = os.path.join(DATA_CACHE_DIR, f"TinyStories_{split_name}.bin")
         with ProcessPoolExecutor() as executor:
             futures = [executor.submit(process_shard, shard_index, shard_filename, model_desc)
                        for shard_index, shard_filename in enumerate(split_shards)]
             for future in as_completed(futures):
-                all_tokens.extend(future.result())
+                all_tokens=future.result()
+                print(f"Shard processed, got {len(future.result()):,} tokens.")
+                count += len(all_tokens)
+                if len(all_tokens)  != 0:
+                    print(f"Tokenized {count:,} tokens so far...")
+                    write_datafile(split_filename, all_tokens, model_desc,count)
+                    all_tokens = []  # clear the list after writing to file
+        # write any remaining tokens to file
+        if len(all_tokens)>0:
+            write_datafile(split_filename, all_tokens, model_desc,count)
 
-        split_filename = os.path.join(DATA_CACHE_DIR, f"TinyStories_{split_name}.bin")
-        write_datafile(split_filename, all_tokens, model_desc)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Tiny Stories dataset preprocessing")

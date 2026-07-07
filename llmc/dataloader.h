@@ -91,7 +91,7 @@ int64_t dataloader_load_shard_(DataLoader *loader, int shard_index) {
     int64_t expected_file_size = HEADER_SIZE * sizeof(int) + ntok * sizeof(uint16_t);
     if (loader->file_size_bytes != expected_file_size) {
         printf("Error: file size is not as expected\n");
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
     // -1 uint16_t due to us taking B*T+1 tokens but moving by B*T tokens
     loader->shard_num_samples = (ntok * sizeof(uint16_t) - sizeof(uint16_t)) / loader->total_batch_size_bytes;

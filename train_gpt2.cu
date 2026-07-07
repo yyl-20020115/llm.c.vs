@@ -1,7 +1,7 @@
 /*
 GPT-2 Transformer Neural Net training loop. See README.md for usage.
 */
-#include <unistd.h>
+#include "dev/unistd.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -1418,8 +1418,8 @@ void error_usage() {
 // main training loop
 int main(int argc, char *argv[]) {
     // read in the (optional) command line arguments
-    const char* train_data_pattern = "dev/data/tinyshakespeare/tiny_shakespeare_train.bin";
-    const char* val_data_pattern = "dev/data/tinyshakespeare/tiny_shakespeare_val.bin";
+    const char* train_data_pattern = "dev\\data\\tinyshakespeare\\tiny_shakespeare_train.bin";
+    const char* val_data_pattern = "dev\\data\\tinyshakespeare\\tiny_shakespeare_val.bin";
     const char* load_filename = "gpt2_124M_bf16.bin"; // bf16 weights of the model
     const char* lr_scheduler_type = "cosine";
     const char* output_log_dir = NULL;

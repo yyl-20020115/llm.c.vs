@@ -2,6 +2,8 @@
 Common utilities for the datasets
 """
 
+import os
+
 import requests
 from tqdm import tqdm
 import numpy as np
@@ -36,7 +38,7 @@ HEADERS_INFO = {
     },
 }
 
-def write_datafile(filename, toks, model_desc="gpt-2"):
+def write_datafile(filename, toks, model_desc="gpt-2", count :int = 0):
     """
     Saves token data as a .bin file, for reading in C.
     - First comes a header with 256 int32s
@@ -49,14 +51,22 @@ def write_datafile(filename, toks, model_desc="gpt-2"):
     header = np.zeros(256, dtype=np.int32) # header is always 256 int32 values
     header[0] = info["magic"]
     header[1] = info["version"]
-    header[2] = len(toks) # number of tokens after the 256*4 bytes of header
+    count = len(toks) if count == 0 else count  
+    header[2] = count # number of tokens after the 256*4 bytes of header
     # construct the data (numpy array of tokens)
     toks_np = np.array(toks, dtype=info["token_dtype"])
     # write to file
-    num_bytes = (256 * 4) + (len(toks) * toks_np.itemsize)
-    print(f"writing {len(toks):,} tokens to {filename} ({num_bytes:,} bytes) in the {model_desc} format")
-    with open(filename, "wb") as f:
-        f.write(header.tobytes())
+    num_bytes = (256 * 4) + (count * toks_np.itemsize)
+    print(f"writing {count:,} tokens to {filename} ({num_bytes:,} bytes) in the {model_desc} format")
+    if os.path.exists(filename):   
+        with open(filename, "r+b") as f:
+            f.seek(0)
+            f.write(header.tobytes())
+    else:
+        with open(filename, "wb") as f:
+            f.write(header.tobytes())
+
+    with open(filename, "ab") as f:
         f.write(toks_np.tobytes())
 
 def write_evalfile(filename, datas):

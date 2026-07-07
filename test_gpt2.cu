@@ -1,4 +1,7 @@
 #define TESTING
+#ifndef ENABLE_FP32
+#define ENABLE_FP32
+#endif
 #include "train_gpt2.cu"
 
 // poor man's tensor checker
