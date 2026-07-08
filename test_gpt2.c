@@ -69,8 +69,9 @@ int main(int argc, char *argv[]) {
     float* expected_grads_memory = malloc_and_point_parameters(&expected_grads, model.param_sizes);
 
     // inputs and expected outputs, only used for error checking
-    int* x = (int*) malloc(B * T * sizeof(int));
-    int* y = (int*) malloc(B * T * sizeof(int));
+	size_t memory_size = B * T * sizeof(int);
+    int* x = (int*) malloc(memory_size);
+    int* y = (int*) malloc(memory_size);
     float* expected_logits = (float*) malloc(B * T * V * sizeof(float));
     float* expected_loss = (float*) malloc(1 * sizeof(float));
 
