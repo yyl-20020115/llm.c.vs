@@ -326,6 +326,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+	printf("Save state for determinism check\n");
     // Finally, let's check determinism
     gpt2_write_to_checkpoint(&model, "test_gpt2cu_model.ckpt");
 
@@ -342,6 +343,7 @@ int main(int argc, char *argv[]) {
         tokens[step] = loader.inputs[0];
     }
 
+	printf("Reload and check determinism\n");
     // reload
     gpt2_free(&model);
     gpt2_build_from_checkpoint(&model, "test_gpt2cu_model.ckpt");
