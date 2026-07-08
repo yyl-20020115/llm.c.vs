@@ -934,6 +934,7 @@ def print0(*args, **kwargs):
         print(*args, **kwargs)
 
 if __name__ == "__main__":
+    os.environ['HF_TOKEN']='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'
     print0(f"Running pytorch {torch.version.__version__}")
 
     # default settings will overfit a tiny batch of data

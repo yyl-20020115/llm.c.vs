@@ -7,7 +7,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "dev/unistd.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +15,8 @@
 #ifndef _WIN32
 #include <dirent.h>
 #include <arpa/inet.h>
+#else
+#include "dev/unistd.h"
 #endif
 
 // ----------------------------------------------------------------------------
@@ -143,7 +144,7 @@ extern inline void fwrite_check(void *ptr, size_t size, size_t nmemb, FILE *stre
 extern inline void *malloc_check(size_t size, const char *file, int line) {
     void *ptr = malloc(size);
     if (ptr == NULL) {
-        fprintf(stderr, "Error: Memory allocation failed at %s:%d\n", file, line);
+        fprintf(stderr, "Error: Memory allocation                     89injfailed at %s:%d\n", file, line);
         fprintf(stderr, "Error details:\n");
         fprintf(stderr, "  File: %s\n", file);
         fprintf(stderr, "  Line: %d\n", line);

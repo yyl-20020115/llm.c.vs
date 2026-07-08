@@ -1,7 +1,9 @@
 /*
 GPT-2 Transformer Neural Net training loop. See README.md for usage.
 */
+#ifdef _WIN32
 #include "dev/unistd.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>

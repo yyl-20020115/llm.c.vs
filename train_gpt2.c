@@ -16,7 +16,6 @@ There will be other versions of this code that specialize it and make it fast.
 #include <math.h>
 #include <time.h>
 #include <string.h>
-//#include <unistd.h>
 #ifdef OMP
 #include <omp.h>
 #endif
@@ -1089,8 +1088,6 @@ int main() {
     const char* train_tokens = access(tiny_shakespeare_train, F_OK) != -1 ? tiny_shakespeare_train : tiny_stories_train;
     const char* val_tokens = access(tiny_shakespeare_val, F_OK) != -1 ? tiny_shakespeare_val : tiny_stories_val;
     
-    train_tokens = tiny_stories_train;
-    val_tokens = tiny_stories_val;
     int B = 4; // batch size 4 (i.e. 4 independent token sequences will be trained on)
     int T = 64; // sequence length 64 (i.e. each sequence is 64 tokens long). must be <= maxT, which is 1024 for GPT-2
     DataLoader train_loader, val_loader;

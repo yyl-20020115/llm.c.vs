@@ -85,13 +85,13 @@ int64_t dataloader_load_shard_(DataLoader *loader, int shard_index) {
     assert(ntok > 0); // we expect some tokens in the file. this should never trip, right?
     // determine the file size and make sure it is consistent with the number of tokens
     fseekCheck(loader->tokens_file, 0, SEEK_END); // seek to end of file
-    loader->file_size_bytes = ftell(loader->tokens_file); // read the offset, i.e. file size
+    loader->file_size_bytes = _ftelli64(loader->tokens_file); // read the offset, i.e. file size
     fseekCheck(loader->tokens_file, 0, SEEK_SET); // seek back to the beginning
     // we expect ntok in the file to be consistent with filesize, assert that is the case
     int64_t expected_file_size = HEADER_SIZE * sizeof(int) + ntok * sizeof(uint16_t);
     if (loader->file_size_bytes != expected_file_size) {
         printf("Error: file size is not as expected\n");
-        //exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
     // -1 uint16_t due to us taking B*T+1 tokens but moving by B*T tokens
     loader->shard_num_samples = (ntok * sizeof(uint16_t) - sizeof(uint16_t)) / loader->total_batch_size_bytes;
