@@ -1352,7 +1352,6 @@ void delete_checkpoint(const char* output_log_dir, int step, MultiGpuConfig* mul
     }
 }
 
-#ifndef TESTING
 // if we are TESTING (see test_gpt2.cu), we'll skip everything below this point
 
 // ----------------------------------------------------------------------------
@@ -1415,10 +1414,14 @@ void error_usage() {
     fprintf(stderr, "  -pp <string> fs_path - used only when nccl_init_method is fs (default = /tmp)\n");
     exit(EXIT_FAILURE);
 }
-
+#ifdef TESTING
 // ----------------------------------------------------------------------------
 // main training loop
-int main(int argc, char *argv[]) {
+int main_ex(int argc, char *argv[]) 
+#else
+int main(int argc, char* argv[])
+#endif
+{
     // read in the (optional) command line arguments
     const char* train_data_pattern = "dev\\data\\tinyshakespeare\\tiny_shakespeare_train.bin";
     const char* val_data_pattern = "dev\\data\\tinyshakespeare\\tiny_shakespeare_val.bin";
@@ -1704,6 +1707,10 @@ int main(int argc, char *argv[]) {
     // in any case, this must be true or we'd index beyond the model's wpe (position embedding table)
     assert(T <= model.config.max_seq_len);
 
+
+    //
+
+    printf("Training starts...\n");
     // train
     cudaEvent_t start, end;
     cudaCheck(cudaEventCreate(&start));
@@ -1857,6 +1864,9 @@ int main(int argc, char *argv[]) {
         cudaCheck(cudaEventSynchronize(end)); // wait for the end event to finish to get correct timings
         // --------------- TRAINING SECTION END -------------------
         // everything that follows now is just diagnostics, prints, logging, etc.
+        printf("Training done...\n");
+
+        printf("Evaling starts...\n");
 
         // todo - move or double-buffer all of this timing logic to avoid idling the GPU at this point!
         float time_elapsed_ms;
@@ -1903,4 +1913,3 @@ int main(int argc, char *argv[]) {
     common_free(model);
     return 0;
 }
-#endif

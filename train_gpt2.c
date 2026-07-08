@@ -1048,7 +1048,6 @@ void gpt2_free(GPT2 *model) {
     free(model->targets);
 }
 
-#ifndef TESTING
 // if we are TESTING (see test_gpt2.c), we'll skip the int main below
 // ----------------------------------------------------------------------------
 // sampler
@@ -1078,7 +1077,12 @@ int sample_mult(float* probabilities, int n, float coin) {
 }
 // ----------------------------------------------------------------------------
 // main training loop
-int main() {
+#ifdef TESTING
+int main_ex() 
+#else
+int main()
+#endif
+{
 
     // build the GPT-2 model from a checkpoint
     GPT2 model;
@@ -1184,4 +1188,3 @@ int main() {
     free(gen_tokens);
     return 0;
 }
-#endif
